@@ -19,7 +19,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # 5. Configuración de Apache
 # (OJO: el apache.conf está en docker/php/apache.conf)
-COPY ./apache.conf /etc/apache2/sites-available/000-default.conf
+COPY apache.conf /etc/apache2/sites-available/000-default.conf
 RUN a2enmod rewrite
 
 # 6. Directorio donde copiaremos el proyecto

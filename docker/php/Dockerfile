@@ -6,36 +6,34 @@ RUN apt-get update && apt-get install -y \
     libzip-dev libpng-dev libjpeg-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Node 20 para compilar Vite
+# 2. Node 20 para Vite
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && npm install -g npm@latest
 
-# 3. Extensiones PHP que Laravel necesita
+# 3. Extensiones PHP para Laravel
 RUN docker-php-ext-install pdo pdo_mysql zip exif pcntl gd
 
-# 4. Composer dentro de la imagen
+# 4. Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# 5. Configuración de Apache
-# (OJO: el apache.conf está en docker/php/apache.conf)
+# 5. Copiar configuración Apache
+# (ruta relativa desde docker/php)
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
 RUN a2enmod rewrite
 
-# 6. Directorio donde copiaremos el proyecto
 WORKDIR /var/www/html
 
-# 7. Copiar la app Laravel dentro del contenedor
-# (IMPORTANTE: la app está en src/*)
+# 6. Copiar el proyecto Laravel (que está en /src, dos niveles arriba)
 COPY ../../src/ .
 
-# 8. Instalar dependencias PHP
+# 7. Instalar dependencias PHP
 RUN composer install --no-dev --optimize-autoloader
 
-# 9. Compilar assets con Vite
+# 8. Compilar assets Vite
 RUN npm install && npm run build
 
-# 10. Permisos para Laravel
+# 9. Permisos Laravel
 RUN chmod -R 775 storage bootstrap/cache
 
 CMD ["apache2-foreground"]
